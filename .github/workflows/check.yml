@@ -31,7 +31,7 @@ jobs:
 
       - name: Save baseline
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.VARIABLES_TOKEN }}
         run: |
           for attempt in {1..3}; do
             if gh variable set PREVIOUS_STATE --body "$STATE"; then
