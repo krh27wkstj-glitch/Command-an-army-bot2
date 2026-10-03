@@ -1,0 +1,35 @@
+name: Command An Army Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check Roblox
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PREVIOUS_STATE: ${{ vars.PREVIOUS_STATE }}
+        run: |
+          node src/index.js | tee result.txt
+          state=$(grep '^STATE:' result.txt | cut -c7-)
+          echo "STATE=$state" >> "$GITHUB_ENV"
+
+      - name: Save baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE: ${{ env.STATE }}
+        run: |
+          gh variable set PREVIOUS_STATE --body "$STATE"
